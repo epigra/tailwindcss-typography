@@ -20,11 +20,20 @@ To see what it looks like in action, check out our [live demo](https://play.tail
 
 ## Installation
 
-Install the plugin from npm:
+This maintained fork upgrades `postcss-selector-parser` to `7.1.6`.
+It preserves the upstream plugin API and the MIT licence.
+Use the fork from https://github.com/epigra/tailwindcss-typography.
+Pin a reviewed full commit SHA in the consumer manifest and lockfile.
+Replace `<full-commit-sha>` before running this command:
 
 ```shell
-npm install -D @tailwindcss/typography
+sfw npm install -D '@tailwindcss/typography@git+https://github.com/epigra/tailwindcss-typography.git#<full-commit-sha>'
 ```
+
+The package keeps its upstream name for existing plugin imports.
+It is private and has no npm publishing workflow.
+The demo build uses `build:demo` so a Git dependency install does not build the demo.
+See https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#git-urls-as-dependencies.
 
 Then add the plugin to your main `style.css` file:
 
@@ -47,6 +56,35 @@ module.exports = {
   ],
 }
 ```
+
+---
+
+## Fork maintenance
+
+Check https://github.com/tailwindlabs/tailwindcss-typography for upstream changes.
+The parser upgrade is proposed in https://github.com/tailwindlabs/tailwindcss-typography/pull/429.
+Keep the contribution on that existing PR.
+
+Before updating the consumer pin:
+
+1. Review the upstream diff and preserve the parser nesting regression.
+2. Run `sfw npm ci`, `npm test -- --runInBand` and `npm audit --omit=dev`.
+3. Install the reviewed Git commit in a fresh consumer. Check its installed parser version and audit result.
+4. Run the consumer's tests, type checks and browser and SSR builds.
+5. Publish only the reviewed fork commit, then pin its full SHA in the consumer manifest and lockfile.
+6. Verify a fresh consumer install can fetch that published commit.
+
+CI runs the plugin tests and runtime audit on Node 22 and 24.
+It also runs weekly to detect new runtime advisories.
+The inherited demo toolchain has development dependency advisories and remains outside the runtime audit.
+Do not deploy that demo as a service.
+
+The added regression rejects a selector with 300 nested `:not()` functions.
+It checks the parser's nesting limit, not flat-selector performance.
+The version upgrade resolves https://github.com/advisories/GHSA-rj75-hqrm-r3gf.
+
+Return the consumer to a supported upstream release when it accepts the patched parser.
+Run the same consumer checks before removing the fork pin.
 
 ---
 

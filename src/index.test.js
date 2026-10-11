@@ -1413,6 +1413,26 @@ it('ignores common non-trailing pseudo-elements in selectors', () => {
   })
 })
 
+test('rejects selectors beyond the parser nesting limit without a stack overflow', async () => {
+  let selector = ':not('.repeat(300) + '.item' + ')'.repeat(300)
+  let config = {
+    content: [{ raw: html`<div class="prose"></div>` }],
+    theme: {
+      typography: {
+        DEFAULT: {
+          css: {
+            [selector]: { color: 'red' },
+          },
+        },
+      },
+    },
+  }
+
+  await expect(run(config)).rejects.toThrow(
+    'Cannot parse selector: nesting depth exceeds the maximum of 256.'
+  )
+})
+
 test('lead styles are inserted after paragraph styles', async () => {
   let config = {
     content: [{ raw: html`<div class="prose"></div>` }],
